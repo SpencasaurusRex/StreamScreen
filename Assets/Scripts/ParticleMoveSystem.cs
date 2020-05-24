@@ -17,6 +17,8 @@ namespace DefaultNamespace
 
         public void Update()
         {
+            bool outwardNormalized = Random.Range(0, 100) == 99; 
+            
             foreach (var particle in particleSet.GetEntities())
             {
                 var velocity = particle.Get<Velocity>();
@@ -28,10 +30,11 @@ namespace DefaultNamespace
 
                 const float yScaling = 2;
                 
+                
                 // Outward force - stronger when further
                 if (Random.Range(0, 100) > 90)
                 {
-                    var outwardForce = translation.Value * 4 * Time.deltaTime;
+                    var outwardForce = translation.Value * (5 * Time.deltaTime);
                     outwardForce.y *= yScaling;
                     velocity.Value += outwardForce;                    
                 }
@@ -40,7 +43,14 @@ namespace DefaultNamespace
                 if (Random.Range(0, 100) > 90)
                 {
                     var outwardForce = Mathf.Min(1 / translation.Value.magnitude, 1) * Time.deltaTime;
-                    velocity.Value += translation.Value.normalized * outwardForce * 10;    
+                    velocity.Value += translation.Value.normalized * (outwardForce * 10);    
+                }
+                
+                // Outward force - normalized
+                if (outwardNormalized)
+                {
+                    var outwardForce = translation.Value.normalized * (100 * Time.deltaTime);
+                    velocity.Value += outwardForce;
                 }
 
                 // Force towards original position
