@@ -14,6 +14,7 @@ public class Game : MonoBehaviour
     World world;
 
     ParticleCreationSystem creationSystem;
+    AnchorMoveSystem anchorSystem;
     ParticleMoveSystem moveSystem;
     ApplyVelocitySystem velocitySystem;
     TransformWriteSystem transformSystem;
@@ -24,6 +25,9 @@ public class Game : MonoBehaviour
         world = new World();
         Setup();
 
+        var global = world.CreateEntity();
+        global.Set(new Global());
+        
         var creation = world.CreateEntity();
         creation.Set(CreationTexture);
     }
@@ -31,6 +35,7 @@ public class Game : MonoBehaviour
     void Setup()
     {
         creationSystem = new ParticleCreationSystem(world, this, ParticleMesh, ParticleMaterial);
+        anchorSystem = new AnchorMoveSystem(world);
         moveSystem = new ParticleMoveSystem(world);
         velocitySystem = new ApplyVelocitySystem(world);
         transformSystem = new TransformWriteSystem(world);
@@ -40,6 +45,7 @@ public class Game : MonoBehaviour
     void Update()
     {
         creationSystem.Update();
+        anchorSystem.Update();
         moveSystem.Update();
         velocitySystem.Update();
         transformSystem.Update();
