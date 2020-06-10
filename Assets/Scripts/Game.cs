@@ -51,4 +51,9 @@ public class Game : MonoBehaviour
         transformSystem.Update();
         renderSystem.Update();
     }
+
+    void OnApplicationQuit()
+    {
+        moveSystem.OnDestroy();
+    }
 }

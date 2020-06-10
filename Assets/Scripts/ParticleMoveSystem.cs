@@ -1,7 +1,11 @@
 ﻿using Assets.Scripts.Transform;
+using CSCore;
+using CSCore.DSP;
 using CSCore.SoundIn;
+using CSCore.Streams;
 using DefaultEcs;
 using UnityEngine;
+using Object = System.Object;
 
 namespace DefaultNamespace
 {
@@ -9,20 +13,43 @@ namespace DefaultNamespace
     {
         EntitySet particleSet;
         float t;
-        // WasapiCapture capture;
+        WasapiCapture capture;
+        IWaveSource waveSource;
+        byte[] buffer;
         public ParticleMoveSystem(World world)
         {
             particleSet = world.GetEntities().With<Translation>().With<Velocity>().AsSet();
-            // capture = new WasapiLoopbackCapture();
-            // capture.Initialize();
+            capture = new WasapiLoopbackCapture();
+            capture.Initialize();
+            var soundInSource = new SoundInSource(capture);
+            var source = soundInSource.ToSampleSource();
+
+            const FftSize fftSize = FftSize.Fft4096;
+            var fftProvider = new FftProvider(source.WaveFormat.Channels, fftSize);
+            
+            var notificationSource = new SingleBlockNotificationStream(source);
+            notificationSource.SingleBlockRead += SingleBlockRead;
+
+            waveSource = notificationSource.ToWaveSource(16);
+            buffer = new byte[waveSource.WaveFormat.BytesPerSecond / 2];
+
+            soundInSource.DataAvailable += DataAvailable;
+
             // capture.DataAvailable += (sender, args) => DataAvailable(sender, args); 
-            // capture.Start();
+            capture.Start();
         }
-        
-        // public void DataAvailable(System.Object sender, DataAvailableEventArgs args)
-        // {
-        //     Debug.Log(args.Data.Length + " " + args.Offset + " " + args.ByteCount);
-        // }
+
+        public void SingleBlockRead(Object sender, SingleBlockReadEventArgs args)
+        {
+            Debug.Log(args.Left + " " + args.Right);
+        }
+
+        public void DataAvailable(Object sender, DataAvailableEventArgs args)
+        {
+            int read;
+            while ((read = waveSource.Read(buffer, 0, buffer.Length)) > 0) ;
+            Debug.Log("Read " + read);
+        }
 
         public void Update()
         {
@@ -74,5 +101,11 @@ namespace DefaultNamespace
 
             t += Time.deltaTime;
         }
+
+        public void OnDestroy()
+        {
+            capture?.Dispose();
+        }
+
     }
 }

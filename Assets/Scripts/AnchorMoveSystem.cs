@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using DefaultEcs;
 using UnityEngine;
-using Random = System.Random;
-using Vector2 = System.Numerics.Vector2;
 
 namespace DefaultNamespace
 {
@@ -51,7 +49,7 @@ namespace DefaultNamespace
                     var corrPoint = configurations[1][bottomConfigCounter++];
                     if (bottomConfigCounter >= configurations[1].Count)
                     {
-                        // If more points on top than bottom config, prevent out of index
+                        // If more points on other config, prevent out of index
                         bottomConfigCounter--;
                     }
 
@@ -65,11 +63,11 @@ namespace DefaultNamespace
                 else if (config == 1 && anchor.Rotation > newRotation)
                 {
                     entity.Set(0);
-                    // Get corresponding bottom config point
+                    // Get corresponding top config point
                     var corrPoint = configurations[0][topConfigCounter++];
                     if (topConfigCounter >= configurations[0].Count)
                     {
-                        // If more points on top than bottom config, prevent out of index
+                        // If more points on other config, prevent out of index
                         topConfigCounter--;
                     }
 
