@@ -16,6 +16,11 @@ namespace DefaultNamespace
         WasapiCapture capture;
         IWaveSource waveSource;
         byte[] buffer;
+        FftProvider fft;
+        
+        const FftSize fftSize = FftSize.Fft4096;
+        float[] fftData = new float[(int)fftSize];
+        
         public ParticleMoveSystem(World world)
         {
             particleSet = world.GetEntities().With<Translation>().With<Velocity>().AsSet();
@@ -24,8 +29,7 @@ namespace DefaultNamespace
             var soundInSource = new SoundInSource(capture);
             var source = soundInSource.ToSampleSource();
 
-            const FftSize fftSize = FftSize.Fft4096;
-            var fftProvider = new FftProvider(source.WaveFormat.Channels, fftSize);
+            fft = new FftProvider(source.WaveFormat.Channels, fftSize);
             
             var notificationSource = new SingleBlockNotificationStream(source);
             notificationSource.SingleBlockRead += SingleBlockRead;
@@ -41,7 +45,7 @@ namespace DefaultNamespace
 
         public void SingleBlockRead(Object sender, SingleBlockReadEventArgs args)
         {
-            Debug.Log(args.Left + " " + args.Right);
+            fft.Add(args.Left, args.Right);
         }
 
         public void DataAvailable(Object sender, DataAvailableEventArgs args)
@@ -53,6 +57,11 @@ namespace DefaultNamespace
 
         public void Update()
         {
+
+            if (fft.IsNewDataAvailable)
+            {
+                fft.GetFftData(fftData);
+            }
 
             bool outwardNormalized = Random.Range(0, 100) == 99; 
             
@@ -89,6 +98,8 @@ namespace DefaultNamespace
                 //     velocity.Value += outwardForce;
                 // }
 
+                
+                
                 // Force towards original position
                 velocity.Value += (original - translation) * (Time.deltaTime * 40);
                 
