@@ -9,7 +9,13 @@ public struct Range
 
     public float Size => Max - Min;
     public float MidPoint => (Min + Max) * 0.5f;
-    
+
+    public Range(float min, float max)
+    {
+        Min = min;
+        Max = min;
+    }
+
     public void Validate()
     {
         float min = Mathf.Min(Min, Max);
@@ -20,6 +26,6 @@ public struct Range
     public float MapTo(Range other, float value)
     {
         float t = (value - Min) / Size;
-        return value * other.Size + other.Min;
+        return t * other.Size + other.Min;
     }
 }

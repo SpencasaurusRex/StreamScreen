@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 public class FixedQueue<T>
 {
@@ -10,6 +11,7 @@ public class FixedQueue<T>
         Elements = new T[capacity];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Write(T newElement)
     {
         Elements[Index++] = newElement;
@@ -17,12 +19,15 @@ public class FixedQueue<T>
             Index -= Elements.Length;
     }
 
-    public void Write(IEnumerable<T> newElements)
+    public void Write(IEnumerable<T> newElements, int length = int.MaxValue)
     {
+        int i = 0;
         var enumerator = newElements.GetEnumerator();
-        while (enumerator.MoveNext())
+        while (enumerator.MoveNext() && i++ < length)
         {
             Elements[Index++] = enumerator.Current;
+            if (Index >= Elements.Length) 
+                Index -= Elements.Length;
         }
         enumerator.Dispose();
     }
