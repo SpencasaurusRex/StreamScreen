@@ -8,11 +8,11 @@ public class AudioPlayer : MonoBehaviour
     AudioClip clip;    
     int position;
 
-    SignalOutput[] signals;
+    ISignalOutput[] signals;
     
     void Start()
     {
-        signals = GetComponents<SignalOutput>();
+        signals = GetComponents<ISignalOutput>();
         int samples = (int)(SampleRate * TimeLength);
         AudioClip myClip = AudioClip.Create("MySinusoid", samples, 1, SampleRate, true, OnAudioRead, OnAudioSetPosition);
         AudioSource aud = GetComponent<AudioSource>();
@@ -22,7 +22,7 @@ public class AudioPlayer : MonoBehaviour
 
     void Update()
     {
-        signals = GetComponents<SignalOutput>();
+        signals = GetComponents<ISignalOutput>();
     }
 
     void OnAudioRead(float[] data)

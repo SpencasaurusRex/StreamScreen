@@ -1,7 +1,7 @@
 ﻿using Sirenix.OdinInspector;
 using UnityEngine;
 
-public class SignalGenerator : SerializedMonoBehaviour, SignalOutput
+public class SignalGenerator : SerializedMonoBehaviour, ISignalOutput
 {
     public SignalType Type;
 
@@ -9,21 +9,20 @@ public class SignalGenerator : SerializedMonoBehaviour, SignalOutput
     public float Amplitude;
     [Min(0f)]
     public float Frequency;
-
-    [ShowInInspector]
-    // public int SampleRate {
-    //     set
-    //     {
-    //         sampleRate = value;
-    //         OnSampleRateChanged?.Invoke();
-    //     }
-    //     get => sampleRate;
-    // }
-    // int sampleRate;
-    public int SampleRate { get; set; }
-
+    
+    #region SampleRate
+    public int SampleRate
+    {
+        get => sampleRate;
+        set => sampleRate = value;
+    }
+    public int sampleRate;
+    int lastSampleRate;
+    
+    public bool SampleRateChanged => lastSampleRate != sampleRate;
+    #endregion
+    
     public FixedQueue<float> Buffer { get; set; }
-    // public event SampleRateChanged OnSampleRateChanged;
 
     const float TwoPi = Mathf.PI * 2;
     float currentTime;
@@ -84,9 +83,10 @@ public class SignalGenerator : SerializedMonoBehaviour, SignalOutput
                 }
                 break;
         }
+        
+        currentTime += Time.deltaTime;
+        lastSampleRate = sampleRate;
     }
-    
-    // public bool Subscribed => OnSampleRateChanged != null;
 }
 
 public enum SignalType

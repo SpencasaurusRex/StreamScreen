@@ -6,18 +6,40 @@ using UnityEngine;
 
 public class SignalManager : MonoBehaviour
 {
-    public SignalOutput[] Outputs;
-    public SignalInput[] Inputs;
+    public ISignalOutput[] Outputs;
+    public ISignalInput[] Inputs;
 
-    public int SampleRate;
-    public int TimeLength;
-    
     FixedQueue<float>[] Buffers;
     float maxTime;
     
     void Start()
     {
-        Setup();
+        CheckComponents();
+    }
+
+    void Update()
+    {
+        if (Outputs == null || Inputs == null) return;
+        
+        bool recreateBuffers = false;
+        foreach (var output in Outputs)
+        {
+            if (output.SampleRateChanged)
+            {
+                recreateBuffers = true;
+            }
+        }
+
+        foreach (var input in Inputs)
+        {
+            if (input.TimeLengthChanged)
+            {
+                recreateBuffers = true;
+            }
+        }
+        
+        if (recreateBuffers)
+            Setup();
     }
 
     [Button]
@@ -25,28 +47,20 @@ public class SignalManager : MonoBehaviour
     {
         var comps = GetComponents<Component>();
         
-        var outputs = new List<SignalOutput>();
-        var inputs = new List<SignalInput>();
+        var outputs = new List<ISignalOutput>();
+        var inputs = new List<ISignalInput>();
         
         foreach (var comp in comps)
         {
-            if (comp is SignalOutput)
+            if (comp is ISignalOutput)
             {
-                var output = comp as SignalOutput;
+                var output = comp as ISignalOutput;
                 outputs.Add(output);
-                output.SampleRate = SampleRate;
-                // if (!output.Subscribed)
-                //     output.OnSampleRateChanged += Setup;
             }
-            else if (comp is SignalInput)
+            else if (comp is ISignalInput)
             {
-                var input = comp as SignalInput;
+                var input = comp as ISignalInput;
                 inputs.Add(input);
-                input.TimeLength = TimeLength;
-                // if (!input.Subscribed)
-                // {
-                //     input.OnTimeLengthChanged += Setup;
-                // }
             }
         }
         
@@ -61,9 +75,13 @@ public class SignalManager : MonoBehaviour
     {
         if (Inputs == null || Outputs == null) return;
         maxTime = Inputs.Max(input => input.TimeLength);
+        
+        if (maxTime <= float.Epsilon) return;
+        
         HashSet<int> sampleRates = new HashSet<int>();
         foreach (var o in Outputs)
         {
+            if (o.SampleRate == 0) continue;
             sampleRates.Add(o.SampleRate);
         }
 
@@ -73,6 +91,7 @@ public class SignalManager : MonoBehaviour
         foreach (var sampleRate in sampleRates)
         {
             int samples = (int)(sampleRate * maxTime);
+            
             var buffer = new FixedQueue<float>(samples); 
             Buffers[i++] = buffer;
 
@@ -80,7 +99,6 @@ public class SignalManager : MonoBehaviour
             {
                 if (output.SampleRate == sampleRate)
                 {
-                    Debug.Log("Setting the buffer");
                     output.Buffer = buffer;
                 }
             }

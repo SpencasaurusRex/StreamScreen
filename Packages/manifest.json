@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.acegikmo.shapes": "ssh://git@github.com/acegikmo/Shapes.git",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.2d.tilemap": "1.0.0",
     "com.unity.collab-proxy": "1.2.16",
@@ -40,5 +41,11 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
+  },
+  "lock": {
+    "com.acegikmo.shapes": {
+      "revision": "HEAD",
+      "hash": "c8d1482862849c75b695f3d115b70e8dfe2ba3d6"
+    }
   }
 }
